@@ -1,8 +1,7 @@
 
 package com.crio.warmup.stock;
 
-
-import com.crio.warmup.stock.dto.AnnualizedReturn;
+// import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.PortfolioTrade;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,38 +9,38 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
+// import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+// import java.time.LocalDate;
+// import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
+// import java.util.Collections;
+// import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
+// import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+// import java.util.stream.Collectors;
+// import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
-import org.springframework.web.client.RestTemplate;
+// import org.springframework.core.io.DefaultResourceLoader;
+// import org.springframework.core.io.Resource;
+// import org.springframework.core.io.ResourceLoader;
+// import org.springframework.web.client.RestTemplate;
 
 
 public class PortfolioManagerApplication {
 
-  // TODO: CRIO_TASK_MODULE_JSON_PARSING
-  //  Read the json file provided in the argument[0]. The file will be available in the classpath.
-  //    1. Use #resolveFileFromResources to get actual file from classpath.
-  //    2. Extract stock symbols from the json file with ObjectMapper provided by #getObjectMapper.
-  //    3. Return the list of all symbols in the same order as provided in json.
-
-  //  Note:
-  //  1. There can be few unused imports, you will need to fix them to make the build pass.
-  //  2. You can use "./gradlew build" to check if your code builds successfully.
-
   public static List<String> mainReadFile(String[] args) throws IOException, URISyntaxException {
-
-     return Collections.emptyList();
+    File file = resolveFileFromResources(args[0]);
+    ObjectMapper objectMapper = getObjectMapper();
+    List<String> list = new ArrayList<String>();
+    PortfolioTrade[] portfolioTrade = objectMapper.readValue(file, PortfolioTrade[].class);
+    for (PortfolioTrade pf: portfolioTrade) {
+      list.add(pf.getSymbol());
+    }
+    return list;
   }
 
 
@@ -79,42 +78,13 @@ public class PortfolioManagerApplication {
     return objectMapper;
   }
 
-
-  // TODO: CRIO_TASK_MODULE_JSON_PARSING
-  //  Follow the instructions provided in the task documentation and fill up the correct values for
-  //  the variables provided. First value is provided for your reference.
-  //  A. Put a breakpoint on the first line inside mainReadFile() which says
-  //    return Collections.emptyList();
-  //  B. Then Debug the test #mainReadFile provided in PortfoliomanagerApplicationTest.java
-  //  following the instructions to run the test.
-  //  Once you are able to run the test, perform following tasks and record the output as a
-  //  String in the function below.
-  //  Use this link to see how to evaluate expressions -
-  //  https://code.visualstudio.com/docs/editor/debugging#_data-inspection
-  //  1. evaluate the value of "args[0]" and set the value
-  //     to the variable named valueOfArgument0 (This is implemented for your reference.)
-  //  2. In the same window, evaluate the value of expression below and set it
-  //  to resultOfResolveFilePathArgs0
-  //     expression ==> resolveFileFromResources(args[0])
-  //  3. In the same window, evaluate the value of expression below and set it
-  //  to toStringOfObjectMapper.
-  //  You might see some garbage numbers in the output. Dont worry, its expected.
-  //    expression ==> getObjectMapper().toString()
-  //  4. Now Go to the debug window and open stack trace. Put the name of the function you see at
-  //  second place from top to variable functionNameFromTestFileInStackTrace
-  //  5. In the same window, you will see the line number of the function in the stack trace window.
-  //  assign the same to lineNumberFromTestFileInStackTrace
-  //  Once you are done with above, just run the corresponding test and
-  //  make sure its working as expected. use below command to do the same.
-  //  ./gradlew test --tests PortfolioManagerApplicationTest.testDebugValues
-
   public static List<String> debugOutputs() {
 
-     String valueOfArgument0 = "trades.json";
-     String resultOfResolveFilePathArgs0 = "";
-     String toStringOfObjectMapper = "";
-     String functionNameFromTestFileInStackTrace = "";
-     String lineNumberFromTestFileInStackTrace = "";
+    String valueOfArgument0 = "trades.json";
+    String resultOfResolveFilePathArgs0 = "chivukula-mrudula-ME_QMONEY/qmoney/bin/main/trades.json";
+    String toStringOfObjectMapper = "com.fasterxml.jackson.databind.ObjectMapper@4135c3b";
+    String functionNameFromTestFileInStackTrace = "PortfolioManagerApplicationTest.mainReadFile";
+    String lineNumberFromTestFileInStackTrace = "22";
 
 
     return Arrays.asList(new String[]{valueOfArgument0, resultOfResolveFilePathArgs0,
