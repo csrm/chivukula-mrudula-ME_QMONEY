@@ -3,6 +3,7 @@ package com.crio.warmup.stock;
 
 // import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.PortfolioTrade;
+// import com.crio.warmup.stock.dto.TotalReturnsDto;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -15,7 +16,7 @@ import java.nio.file.Paths;
 // import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-// import java.util.Collections;
+import java.util.Collections;
 // import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +25,6 @@ import java.util.logging.Logger;
 // import java.util.stream.Collectors;
 // import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
-// import org.springframework.core.io.DefaultResourceLoader;
-// import org.springframework.core.io.Resource;
-// import org.springframework.core.io.ResourceLoader;
 // import org.springframework.web.client.RestTemplate;
 
 
@@ -51,6 +49,11 @@ public class PortfolioManagerApplication {
 
 
 
+
+
+  // TODO: CRIO_TASK_MODULE_REST_API
+  //  Find out the closing price of each stock on the end_date and return the list
+  //  of all symbols in ascending order by its close value on end date.
 
   // Note:
   // 1. You may have to register on Tiingo to get the api_token.
@@ -95,6 +98,16 @@ public class PortfolioManagerApplication {
 
   // Note:
   // Remember to confirm that you are getting same results for annualized returns as in Module 3.
+  public static List<String> mainReadQuotes(String[] args) throws IOException, URISyntaxException {
+     return Collections.emptyList();
+  }
+
+
+
+
+
+
+
 
 
 
@@ -104,6 +117,8 @@ public class PortfolioManagerApplication {
 
     printJsonObject(mainReadFile(args));
 
+
+    printJsonObject(mainReadQuotes(args));
 
 
   }
