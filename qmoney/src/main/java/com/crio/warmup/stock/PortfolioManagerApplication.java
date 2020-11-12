@@ -1,31 +1,27 @@
-
 package com.crio.warmup.stock;
 
-// import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.PortfolioTrade;
-// import com.crio.warmup.stock.dto.TotalReturnsDto;
+import com.crio.warmup.stock.dto.TiingoCandle;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-// import java.nio.file.Files;
 import java.nio.file.Paths;
-// import java.time.LocalDate;
-// import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-// import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
-// import java.util.logging.Level;
 import java.util.logging.Logger;
-// import java.util.stream.Collectors;
-// import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
-// import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+
 
 
 public class PortfolioManagerApplication {
@@ -40,29 +36,6 @@ public class PortfolioManagerApplication {
     }
     return list;
   }
-
-
-  // Note:
-  // 1. You may need to copy relevant code from #mainReadQuotes to parse the Json.
-  // 2. Remember to get the latest quotes from Tiingo API.
-
-
-
-
-
-
-  // TODO: CRIO_TASK_MODULE_REST_API
-  //  Find out the closing price of each stock on the end_date and return the list
-  //  of all symbols in ascending order by its close value on end date.
-
-  // Note:
-  // 1. You may have to register on Tiingo to get the api_token.
-  // 2. Look at args parameter and the module instructions carefully.
-  // 2. You can copy relevant code from #mainReadFile to parse the Json.
-  // 3. Use RestTemplate#getForObject in order to call the API,
-  //    and deserialize the results in List<Candle>
-
-
 
   private static void printJsonObject(Object object) throws IOException {
     Logger logger = Logger.getLogger(PortfolioManagerApplication.class.getCanonicalName());
@@ -95,21 +68,55 @@ public class PortfolioManagerApplication {
         lineNumberFromTestFileInStackTrace});
   }
 
-
-  // Note:
-  // Remember to confirm that you are getting same results for annualized returns as in Module 3.
-  public static List<String> mainReadQuotes(String[] args) throws IOException, URISyntaxException {
-     return Collections.emptyList();
+  public static List<String> mainReadQuotes(String[] args) throws NullPointerException, 
+         IOException, URISyntaxException {
+    File file = resolveFileFromResources(args[0]);
+    ObjectMapper objectMapper = getObjectMapper();
+    Map<Double,List<String>> list = new TreeMap<Double,List<String>>();
+    List<String> symbols = new ArrayList<>();
+    if (objectMapper != null) {
+      PortfolioTrade[] ptrades = objectMapper.readValue(file, PortfolioTrade[].class);
+      if (ptrades != null) {
+        for (PortfolioTrade ptrade : ptrades) {
+          String symbol = ptrade.getSymbol();
+          LocalDate purchaseDate = ptrade.getPurchaseDate();
+          String token = "93c80accc7b3868d81c216fdbc53d889868fdd77";
+          String uri = "https://api.tiingo.com/tiingo/daily/" + symbol 
+                      + "/prices?startDate=" + purchaseDate + "&endDate=" + args[1]
+                      + "&token=" + token;
+          ResponseEntity<TiingoCandle[]> responses;
+          try {
+            responses = (new RestTemplate())
+                                    .getForEntity(uri, TiingoCandle[].class);
+            if (responses.getBody().length == 0) {
+              throw new RuntimeException();
+            }
+            for (TiingoCandle response : responses.getBody()) {
+              if (response.getDate().toString().equals(args[1])) {
+                if (list.get(response.getClose()) == null) {
+                  List<String> value = new ArrayList<>();
+                  value.add(symbol);
+                  list.put(response.getClose(),value);
+                } else {
+                  (list.get(response.getClose())).add(symbol);
+                } 
+                break;
+              }
+            }
+          } catch (NullPointerException e) {
+            throw new NullPointerException();
+          }
+        }
+      }
+      for (Map.Entry<Double,List<String>> entry : list.entrySet()) {
+        for (String s : entry.getValue()) {
+          symbols.add(s);
+        }
+      }
+      list.clear();
+    }
+    return symbols;
   }
-
-
-
-
-
-
-
-
-
 
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
