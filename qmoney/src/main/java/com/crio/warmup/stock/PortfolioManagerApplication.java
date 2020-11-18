@@ -1,15 +1,21 @@
 package com.crio.warmup.stock;
 
+import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.PortfolioTrade;
 import com.crio.warmup.stock.dto.TiingoCandle;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -118,15 +124,97 @@ public class PortfolioManagerApplication {
     return symbols;
   }
 
+  public static List<AnnualizedReturn> mainCalculateSingleReturn(String[] args)
+      throws IOException, URISyntaxException, ParseException {
+    File file = resolveFileFromResources(args[0]);
+    ObjectMapper objectMapper = getObjectMapper();
+    List<AnnualizedReturn> list = new ArrayList<>();
+    if (objectMapper != null) {
+      PortfolioTrade[] ptrades = objectMapper.readValue(file, PortfolioTrade[].class);
+      if (ptrades != null) {
+        for (PortfolioTrade ptrade : ptrades) {
+          String symbol = ptrade.getSymbol();
+          LocalDate purchaseDate = ptrade.getPurchaseDate();
+          String token = "93c80accc7b3868d81c216fdbc53d889868fdd77";
+          String uri = "https://api.tiingo.com/tiingo/daily/" + symbol 
+                      + "/prices?startDate=" + purchaseDate + "&endDate=" + args[1]
+                      + "&token=" + token;
+          ResponseEntity<TiingoCandle[]> responses;
+          try {
+            responses = (new RestTemplate())
+                              .getForEntity(uri, TiingoCandle[].class);
+            if (responses.getBody().length == 0) {
+              throw new RuntimeException();
+            }
+            int flag = 0;
+            String date = ptrade.getPurchaseDate().toString();
+            double sellPrice = 0;
+            double buyPrice = 0;
+            int foundValue = 0;
+            while (true) {
+              if (flag == 2) {
+                break;
+              }
+              for (TiingoCandle response : responses.getBody()) {
+                if (response.getDate().toString().equals(date)) {
+                  if (flag == 0) {
+                    buyPrice = response.getOpen();
+                    flag = 1;
+                    foundValue = 1;
+                    date = args[1];
+                    break;
+                  } else if (flag == 1) {
+                    if (response.getClose() != 0) {
+                      sellPrice = response.getClose();
+                      foundValue = 1;
+                      flag = 2;
+                    } else {
+                      foundValue = 0;
+                    }
+                    break;
+                  }
+                } else {
+                  foundValue = 0;
+                }
+              }
+              if (foundValue == 0 && flag == 1) {
+                int millis = 1000 * 60 * 60 * 24;
+                date = new Date(new SimpleDateFormat("yyyy-mm-dd")
+                                     .parse(date).getTime() - millis).toString();
+              }
+            }
+            list.add(calculateAnnualizedReturns(LocalDate.parse(date), 
+                                      ptrade, buyPrice, sellPrice));  
+          } catch (NullPointerException e) {
+            throw new NullPointerException();
+          }
+        }
+      }
+    }
+    return list;
+  }
+
+  public static AnnualizedReturn calculateAnnualizedReturns(LocalDate endDate,
+      PortfolioTrade trade, Double buyPrice, Double sellPrice) {
+    double totalReturns = (sellPrice - buyPrice) / buyPrice;
+    Period period = Period.between(trade.getPurchaseDate(), endDate);
+    double tperiod = period.getYears() + (period.getMonths() / 12.0) 
+                     + (period.getDays() / 365.0);
+    double annualizedReturns = Math.pow((1 + totalReturns), 
+                                         (1 / tperiod)) - 1;
+    return new AnnualizedReturn(trade.getSymbol(), 
+                                annualizedReturns, totalReturns);
+  }
+
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
     ThreadContext.put("runId", UUID.randomUUID().toString());
 
     printJsonObject(mainReadFile(args));
 
-
     printJsonObject(mainReadQuotes(args));
 
+    printJsonObject(mainCalculateSingleReturn(args));
 
   }
 }
