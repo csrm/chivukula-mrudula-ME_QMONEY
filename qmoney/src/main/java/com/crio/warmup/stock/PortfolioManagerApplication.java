@@ -11,7 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.sql.Date;
+// import java.sql.Date;
+import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -237,6 +238,13 @@ throws Exception {
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());    
     ThreadContext.put("runId", UUID.randomUUID().toString());
+    String arg[] = args;
+    if(args.length != 2) {
+      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+	    Date date = new Date();
+	    System.out.println();
+      arg[1] = formatter.format(date);
+    }
   
     printJsonObject(mainReadFile(args));
     
