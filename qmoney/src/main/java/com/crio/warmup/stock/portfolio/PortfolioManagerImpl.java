@@ -83,8 +83,9 @@ public class PortfolioManagerImpl implements PortfolioManager {
           if (foundValue == 0 && flag == 1) {
             int millis = 1000 * 60 * 60 * 24;
             try {
-              date = new Date(new SimpleDateFormat("yyyy-mm-dd")
-                                 .parse(date).getTime() - millis).toString();
+              SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd");
+              date = formatter.format((new SimpleDateFormat("yyyy-mm-dd")
+                                 .parse(date).getTime() - millis)).toString();
             } catch (ParseException pe) {
               pe.printStackTrace();
             }
@@ -116,6 +117,7 @@ public class PortfolioManagerImpl implements PortfolioManager {
   private Comparator<AnnualizedReturn> getComparator() {
     return Comparator.comparing(AnnualizedReturn::getAnnualizedReturn).reversed();
   }
+
 
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       throws JsonProcessingException {

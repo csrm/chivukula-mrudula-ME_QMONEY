@@ -190,8 +190,9 @@ public class PortfolioManagerApplication {
               }
               if (foundValue == 0 && flag == 1) {
                 int millis = 1000 * 60 * 60 * 24;
-                date = new Date(new SimpleDateFormat("yyyy-mm-dd")
-                                     .parse(date).getTime() - millis).toString();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd");
+                date = formatter.format((new SimpleDateFormat("yyyy-mm-dd")
+                                 .parse(date).getTime() - millis)).toString();
               }
             }
             list.add(calculateAnnualizedReturns(LocalDate.parse(date), 
@@ -238,14 +239,7 @@ throws Exception {
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());    
     ThreadContext.put("runId", UUID.randomUUID().toString());
-    String arg[] = args;
-    if(args.length != 2) {
-      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-	    Date date = new Date();
-	    System.out.println();
-      arg[1] = formatter.format(date);
-    }
-  
+    String arg[] = {"trades.json", "2020-01-01"};
     printJsonObject(mainReadFile(arg));
     
     printJsonObject(mainReadQuotes(arg));
