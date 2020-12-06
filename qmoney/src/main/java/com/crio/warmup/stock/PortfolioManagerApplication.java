@@ -246,13 +246,13 @@ throws Exception {
       arg[1] = formatter.format(date);
     }
   
-    printJsonObject(mainReadFile(args));
+    printJsonObject(mainReadFile(arg));
     
-    printJsonObject(mainReadQuotes(args));
+    printJsonObject(mainReadQuotes(arg));
     
-    printJsonObject(mainCalculateSingleReturn(args));
+    printJsonObject(mainCalculateSingleReturn(arg));
     
-    printJsonObject(mainCalculateReturnsAfterRefactor(args));
+    printJsonObject(mainCalculateReturnsAfterRefactor(arg));
   }
 }
 
