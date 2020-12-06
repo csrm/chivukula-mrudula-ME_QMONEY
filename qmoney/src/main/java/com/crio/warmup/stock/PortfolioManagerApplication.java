@@ -28,6 +28,14 @@ import java.util.logging.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import com.crio.warmup.stock.dto.TotalReturnsDto;
+import com.crio.warmup.stock.portfolio.PortfolioManager;
+import com.crio.warmup.stock.portfolio.PortfolioManagerFactory; 	
+import java.nio.file.Files;
+import java.time.temporal.ChronoUnit;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 
@@ -208,17 +216,35 @@ public class PortfolioManagerApplication {
     return new AnnualizedReturn(trade.getSymbol(), 
                                 annualizedReturns, totalReturns);
   }
+// TODO: CRIO_TASK_MODULE_REFACTOR
+//  Once you are done with the implementation inside PortfolioManagerImpl and
+//  PortfolioManagerFactory, create PortfolioManager using PortfolioManagerFactory.
+//  Refer to the code from previous modules to get the List<PortfolioTrades> and endDate, and
+//  call the newly implemented method in PortfolioManager to calculate the annualized returns.
+
+// Note:
+// Remember to confirm that you are getting same results for annualized returns as in Module 3.
+public static List<AnnualizedReturn> mainCalculateReturnsAfterRefactor(String[] args)
+throws Exception {
+ LocalDate endDate = LocalDate.parse(args[1]);
+ PortfolioManager portfolioManager = PortfolioManagerFactory.
+                                     getPortfolioManager(new RestTemplate());
+ ObjectMapper objectMapper = getObjectMapper();
+ PortfolioTrade[] portfolioTrades = objectMapper.readValue(resolveFileFromResources(args[0]), PortfolioTrade[].class);
+ return portfolioManager.calculateAnnualizedReturn(Arrays.asList(portfolioTrades), endDate);
+}
 
   public static void main(String[] args) throws Exception {
-    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());    
     ThreadContext.put("runId", UUID.randomUUID().toString());
-
+  
     printJsonObject(mainReadFile(args));
-
+    
     printJsonObject(mainReadQuotes(args));
-
+    
     printJsonObject(mainCalculateSingleReturn(args));
-
+    
+    printJsonObject(mainCalculateReturnsAfterRefactor(args));
   }
 }
 
